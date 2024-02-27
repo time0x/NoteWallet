@@ -155,27 +155,40 @@ export class CommandLineWallet {
         },
       )
       .command(
-        "mintnote",
-        "Mint Note Token",
-        (yargs) => {},
+        "mintnote [times]",
+        "Mint Note Token multiple times",
+        (yargs) => {
+          yargs.positional("times", {
+            describe: "Number of times to mint the note token",
+            type: "number",
+            default: 1,
+          });
+        },
         async (argv) => {
           if (!this.currentWallet) {
             console.log("No wallet selected");
             return;
           }
-          const result = await mintPowToken(this.currentWallet);
-          if (result?.success) {
-            console.log(
-              "Succeeded:",
-              interpolate(this.currentWallet.explorer!.tx, {
-                txId: result.txId,
-              }),
-            );
-          } else {
-            console.log(result);
+          const times = argv.times || 1;
+          for (let i = 0; i < times; i++) {
+            console.log(`Minting attempt ${i + 1} of ${times}`);
+            const result = await mintPowToken(this.currentWallet);
+            if (result?.success) {
+              console.log(
+                "Succeeded:",
+                interpolate(this.currentWallet.explorer!.tx, {
+                  txId: result.txId,
+                }),
+              );
+            } else {
+              console.log("Failed to mint:", result);
+              // Decide if you want to break the loop on failure or continue
+              // break;
+            }
           }
         },
       )
+      
       .parse();
   }
 
